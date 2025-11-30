@@ -1,0 +1,25 @@
+# =======================================================
+# BUFFETT'S BRAIN AI AGENT RAG CHAT - APPLICATION LAUNCH COMMANDS
+# =======================================================
+# This guide assumes Python dependencies are installed and the vector store (knowledge base)
+# has already been built using 'process_documents.py'.
+# All commands are run from the project's root directory.
+# -------------------------------------------------------
+
+# CHAT APPLICATION RUN COMMANDS
+# -------------------------------------------------------
+# 1. Run the primary Streamlit chat interface (fixed header, scrollable history)
+# This launches the web application (src/app2.py).
+
+streamlit run src/app2.py
+
+# 2. Run the alternative chat application (Command Line Interface - CLI)
+# This launches the standard Python command-line chat application (buffetts_brain/chat_with_brain.py).
+
+python buffetts_brain/chat_with_brain.py
+
+# -------------------------------------------------------
+# BROWSER ACCESS# ---------------------------------------
+# The Streamlit application (1) will open in your browser (usually http://localhost:8501).
+# The command-line application (2) runs directly in your terminal/console.
+# You can now chat with the AGENTIC AI RAG agent!

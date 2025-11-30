@@ -1,0 +1,19 @@
+##--- Core LLM/Agent Framework ---
+
+google-genai # Core Google GenAI SDK
+langchain-core
+langchain-google-genai # *** Substituted for langchain-openai to use your GEMINI_API_KEY ***
+langgraph
+pydantic # For structured output and data validation in agents
+
+##--- RAG Components ---
+
+chromadb # Vector Store for the knowledge base
+pypdf # To load PDF documents
+unstructured # Helps parse complex document layouts
+tiktoken # Token counting utility (useful for chunking)
+
+##--- Utilities and Search ---
+
+python-dotenv # To load API keys from the .env file
+tavily-python # Web search tool
