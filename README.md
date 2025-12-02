@@ -1,4 +1,4 @@
-# Buffett's Brain 🧠
+# Buffett's Brain 🧠 RAG-Enabled AI Agent
 
 **An Educational RAG-Enabled AI Agent for Investment Wisdom**
 
