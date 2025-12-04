@@ -8,6 +8,9 @@ __pycache__/
 # Vector Database
 knowledge_base/vector_db/
 
+# Documents
+knowledge_base/
+
 # Streamlit
 .streamlit/
 

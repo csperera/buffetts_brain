@@ -1,6 +1,6 @@
-# 🧠 Buffett's Brain - Intelligent RAG System
+# 🧠 Buffett's Brain - Agentic AI RAG-Enhanced Knowledge Base System
 
-> A production-grade Retrieval-Augmented Generation (RAG) system that combines 50 years of Warren Buffett and Charlie Munger's investment wisdom with real-time web search capabilities.
+> A production-grade Agentic AI Retrieval-Augmented Generation (RAG) knowledge base system that combines 50 years of Warren Buffett and Charlie Munger's investment wisdom with real-time web search capabilities.
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Streamlit](https://img.shields.io/badge/streamlit-1.28+-red.svg)](https://streamlit.io)
