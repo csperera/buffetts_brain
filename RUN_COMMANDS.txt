@@ -11,7 +11,7 @@
 # 1. Run the primary Streamlit chat interface (fixed header, scrollable history)
 # This launches the web application (src/app2.py).
 
-streamlit run src/app2.py
+streamlit run src/app3.py
 
 # 2. Run the alternative chat application (Command Line Interface - CLI)
 # This launches the standard Python command-line chat application (buffetts_brain/chat_with_brain.py).

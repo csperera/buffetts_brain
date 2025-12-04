@@ -1,51 +1,49 @@
-# Version 0.3 (Layout Fix): Forces the assistant's dynamic response to render inside the fixed-height container, fixing the "out-of-bounds" rendering issue.
-# Note: This may re-introduce the minor response flicker.
+# Version 0.7: RAG with Tavily Search - GROQ EDITION! 🚀
 import os
 import streamlit as st
 from dotenv import load_dotenv
 
-# --- CORRECTED LangChain Imports ---
+# LangChain Core Imports
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
 
-# Imports for Google Generative AI components
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain_community.vectorstores import Chroma
+# Groq for LLM (FAST & FREE!)
+from langchain_groq import ChatGroq
+
+# HuggingFace Embeddings (FREE!)
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+
+# Tools
+from langchain_tavily import TavilySearch 
 
 # --- Configuration ---
 load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
-# Define paths and constants (must match process_documents.py)
-VECTOR_DB_PATH = "knowledge_base/vector_db"
-EMBEDDING_MODEL_NAME = "text-embedding-004"
-GENERATION_MODEL_NAME = "gemini-2.5-flash"
-SYSTEM_PROMPT = """
-You are 'Buffett's Brain', an expert financial analyst and wise investor. 
+# Define paths and constants
+VECTOR_DB_PATH = "../knowledge_base/vector_db"  # Updated path since we're in /src
+EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"  # Free, fast embeddings
+GROQ_MODEL_NAME = "llama-3.1-8b-instant"  # Super fast!
 
-1. **For philosophy, strategy, or historical facts**, answer based ONLY on the provided context (annual letters, books, transcripts). 
-2. **For real-time facts (like current stock prices, recent news, or general knowledge)**, use your general knowledge or search capabilities.
-
-If the context does not contain the answer and the question is NOT a real-time fact, say "I could not find a relevant answer in the collected wisdom of Buffett and Munger."
-"""
-
-# Check for API Key on load
-if not GEMINI_API_KEY:
-    st.error("Error: GEMINI_API_KEY not found. Please ensure your .env file is configured correctly.")
+# Check for API Keys
+if not GROQ_API_KEY:
+    st.error("Error: GROQ_API_KEY not found. Please add it to your .env file.")
+    st.stop()
+if not TAVILY_API_KEY:
+    st.error("Error: TAVILY_API_KEY not found. Please add it to your .env file.")
     st.stop()
 
 
-# Use st.cache_resource to load the RAG chain only once
 @st.cache_resource
-def setup_rag_chain():
+def setup_rag_and_search():
     """
-    Sets up the Retrieval-Augmented Generation (RAG) chain.
+    Sets up both RAG retrieval and web search capabilities.
     """
-    # 1. Initialize Embeddings (must match the model used for creating the store)
-    embedding_function = GoogleGenerativeAIEmbeddings(
-        model=EMBEDDING_MODEL_NAME,
-        google_api_key=GEMINI_API_KEY
+    # 1. Initialize Embeddings (HuggingFace - Free!)
+    embedding_function = HuggingFaceEmbeddings(
+        model_name=EMBEDDING_MODEL_NAME
     )
     
     # 2. Load the Vector Store
@@ -55,89 +53,174 @@ def setup_rag_chain():
             embedding_function=embedding_function
         )
     except Exception as e:
-        # Note: Streamlit stops execution with st.error + st.stop()
         st.error(f"Error loading vector store. Did you run process_documents.py? Error: {e}")
-        return None
+        return None, None, None
 
     # 3. Create Retriever
     retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
-    # 4. Initialize the LLM (Gemini 2.5 Flash for speed)
-    llm = ChatGoogleGenerativeAI(
-        model=GENERATION_MODEL_NAME,
-        google_api_key=GEMINI_API_KEY,
-        temperature=0.0,
-        tools=[{"google_search": {}}] 
+    # 4. Create Tavily Search Tool
+    search_tool = TavilySearch(
+        api_key=TAVILY_API_KEY,
+        max_results=3,
+        search_depth="advanced",
+        include_answer=True,
+        include_raw_content=False
     )
 
-    # 5. Define the RAG Prompt Template
-    template = SYSTEM_PROMPT + "\n\nContext: {context}\n\nQuestion: {question}"
-    prompt = ChatPromptTemplate.from_template(template)
-    
-    # 6. Build the RAG Chain
-    rag_chain = (
-        {"context": retriever | RunnablePassthrough(), "question": RunnablePassthrough()}
-        | prompt
-        | llm
-        | StrOutputParser()
+    # 5. Initialize Groq LLM (BLAZING FAST! 🔥)
+    llm = ChatGroq(
+        model=GROQ_MODEL_NAME,
+        groq_api_key=GROQ_API_KEY,
+        temperature=0.0,
+        max_tokens=2048
     )
-    return rag_chain
+    
+    return retriever, search_tool, llm
+
+
+def process_query(query, retriever, search_tool, llm):
+    """
+    Processes a query by determining whether to use RAG, search, or both.
+    """
+    # Keywords that suggest we need real-time search
+    search_keywords = [
+        'current', 'today', 'now', 'latest', 'recent', 'price', 'stock',
+        'news', 'this year', 'this month', '2024', '2025', 'happening'
+    ]
+    
+    # Keywords that suggest we need RAG knowledge base
+    rag_keywords = [
+        'buffett', 'munger', 'philosophy', 'principle', 'moat', 'margin of safety',
+        'investment strategy', 'annual letter', 'what does buffett', 'berkshire'
+    ]
+    
+    query_lower = query.lower()
+    needs_search = any(keyword in query_lower for keyword in search_keywords)
+    needs_rag = any(keyword in query_lower for keyword in rag_keywords)
+    
+    # Default: if unclear, use RAG
+    if not needs_search and not needs_rag:
+        needs_rag = True
+    
+    results = []
+    
+    # Get RAG context if needed
+    if needs_rag:
+        try:
+            rag_docs = retriever.invoke(query) 
+            rag_context = "\n\n".join([doc.page_content for doc in rag_docs])
+            results.append(f"**From Buffett's Knowledge Base:**\n{rag_context}")
+        except Exception as e:
+            results.append(f"**RAG Retrieval Error:** {str(e)}")
+    
+    # Get search results if needed
+    if needs_search:
+        try:
+            search_results = search_tool.invoke(query)
+            if search_results:
+                search_context = "\n\n".join([
+                    f"- {result.get('content', '')}" 
+                    for result in search_results 
+                    if isinstance(result, dict)
+                ])
+                results.append(f"**From Web Search:**\n{search_context}")
+        except Exception as e:
+            results.append(f"**Search Error:** Could not retrieve web results: {e}")
+    
+    # Combine all context
+    combined_context = "\n\n---\n\n".join(results) if results else "No relevant information found."
+    
+    # Create prompt
+    prompt_template = """You are 'Buffett's Brain', an expert financial analyst and wise investor.
+
+Based on the following information, answer the user's question thoroughly and accurately.
+If using web search results, cite the sources. If using knowledge base, reference Buffett/Munger's wisdom.
+
+{context}
+
+Question: {question}
+
+Answer:"""
+    
+    prompt = ChatPromptTemplate.from_template(prompt_template)
+    
+    # Generate response with error handling
+    try:
+        chain = prompt | llm | StrOutputParser()
+        response = chain.invoke({"context": combined_context, "question": query})
+        return response
+        
+    except Exception as e:
+        return f"⚠️ **Error generating response:** {str(e)}\n\nPlease try again or rephrase your question."
+
 
 # --- Streamlit UI Setup ---
-
-# Initialize the RAG chain
-rag_chain = setup_rag_chain()
-if rag_chain is None:
-    st.stop()
-
 st.set_page_config(page_title="Buffett's Brain RAG Chat", layout="wide")
 
-# 1st line: "Buffett's Brain" - Very large font, centered
-st.markdown("<h1 style='text-align: center; font-size: 4.5em;'>Buffett's Brain</h1>", unsafe_allow_html=True)
+# Initialize components
+retriever, search_tool, llm = setup_rag_and_search()
+if retriever is None:
+    st.stop()
 
-# 2nd line: "RAG-Enabled AI Agent" - Large font, centered
-st.markdown("<h2 style='text-align: center; font-size: 2em; color: #AAAAAA;'>RAG-Enabled AI Agent</h2>", unsafe_allow_html=True)
+# Header
+st.markdown("<h1 style='text-align: center; font-size: 4.5em;'>🧠 Buffett's Brain</h1>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; font-size: 2em; color: #AAAAAA;'>RAG-Enabled AI Agent with Real-Time Search</h2>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center;'>Powered by Groq (Llama 3.1 70B), Tavily Search & HuggingFace Embeddings</p>", unsafe_allow_html=True)
 
-# Optional small caption (retained original concept but cleaner)
-st.markdown(f"<p style='text-align: center;'>Powered by Gemini 2.5 Flash and <code>text-embedding-004</code></p>", unsafe_allow_html=True)
+# Sidebar with info
+with st.sidebar:
+    st.header("⚡ About")
+    st.markdown("""
+    **Buffett's Brain** combines:
+    - 📚 RAG knowledge base (Buffett/Munger wisdom)
+    - 🌐 Real-time web search (current market data)
+    - 🚀 Groq LLM (blazing fast & free!)
+    
+    **Model:** `llama-3.1-70b-versatile`
+    
+    **Tips:**
+    - Ask about investment philosophy
+    - Check current stock prices
+    - Get company analysis
+    """)
+    
+    if st.button("🗑️ Clear Chat History"):
+        st.session_state["messages"] = [
+            {"role": "assistant", "content": "Chat cleared! How can I help you?"}
+        ]
+        st.rerun()
 
-# --- START SCROLLING CHAT CONTAINER LOGIC ---
-
-# Initialize chat history in session state
+# Initialize chat history
 if "messages" not in st.session_state:
     st.session_state["messages"] = [
-        {"role": "assistant", "content": "Hello! I am 'Buffett's Brain'. Ask me anything about the investment philosophy of Warren Buffett and Charlie Munger, or ask for current stock prices!"}
+        {"role": "assistant", "content": """Hello! I am **Buffett's Brain** 🧠
+
+Ask me about:
+- 📊 Investment philosophy from Buffett & Munger (from my knowledge base)
+- 💹 Current stock prices and market news (via real-time search)
+- 🏢 Company analysis combining both sources!
+
+*Powered by Groq - expect lightning-fast responses! ⚡*"""}
     ]
 
-# Use a dedicated container for the chat history with a fixed height
-# This is the key element that prevents the rest of the page from scrolling.
-chat_history_container = st.container(height=500) 
+# Chat container with fixed height
+chat_history_container = st.container(height=500)
 
-# Display chat messages from history inside the scrolling container
+# Display chat history
 with chat_history_container:
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
-# --- END SCROLLING CHAT CONTAINER LOGIC ---
-
-
-# Handle user input and invoke the RAG chain (this remains outside the scroll container)
+# Handle user input
 if prompt := st.chat_input("Ask me a question..."):
-    # 1. Add user message to history. This triggers the script rerun.
+    # Add user message
     st.session_state.messages.append({"role": "user", "content": prompt})
     
-    # 2. Invoke the RAG chain and show the response, forcing it to render inside the container.
-    with chat_history_container: # <-- FIX: Re-entering the container context to ensure placement
+    # Generate response
+    with chat_history_container:
         with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                try:
-                    response = rag_chain.invoke(prompt)
-                    st.write(response)
-
-                    # 3. Add assistant response to history
-                    st.session_state.messages.append({"role": "assistant", "content": response})
-
-                except Exception as e:
-                    error_msg = f"An error occurred: {e}. Please check your Gemini API key and network connection."
-                    st.error(error_msg)
-                    st.session_state.messages.append({"role": "assistant", "content": error_msg})
+            with st.spinner("🤔 Thinking at lightning speed..."):
+                response = process_query(prompt, retriever, search_tool, llm)
+                st.write(response)
+                st.session_state.messages.append({"role": "assistant", "content": response})
