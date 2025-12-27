@@ -6,7 +6,7 @@
 [![Streamlit](https://img.shields.io/badge/streamlit-1.28+-red.svg)](https://streamlit.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[![Click To Watch Demo Video](https://img.shields.io/badge/▶️-Click%20To%20Watch%20Demo%20Video-red?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=Y5FleSE2BBo)
+[![Click To Watch Demo Video](https://img.shields.io/badge/▶️-Click%20To%20Watch%20Demo%20Video-red?style=for-the-badge&logo=youtube)](https://youtu.be/XHCs2oZPfng)
 
 ---
 
@@ -35,7 +35,7 @@
 - **Real-time information**: Web search integration for current market data
 - **Intelligent routing**: LLM-based relevance scoring to choose the optimal information source
 
-This project demonstrates cutting-edge RAG architecture with hybrid retrieval strategies, making it an excellent portfolio piece for ML/AI engineering roles.
+This project demonstrates cutting-edge RAG architecture with hybrid retrieval strategies, making it an excellent demonstration of ML/AI engineering.
 
 ---
 
