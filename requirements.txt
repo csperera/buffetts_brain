@@ -1,12 +1,45 @@
+# Buffett's Brain - RAG System Dependencies
+# Python 3.9+ required
+
+# Core Framework
 streamlit>=1.28.0
+
+# LLM & Embeddings
 langchain>=0.1.0
 langchain-core>=0.1.0
-langchain-groq>=0.1.0
-langchain-huggingface>=0.0.1
-langchain-chroma>=0.1.0
-langchain-tavily>=0.1.0
 langchain-community>=0.0.20
-python-dotenv>=1.0.0
+langchain-groq>=0.0.1
+langchain-huggingface>=0.0.1
+groq>=0.4.0
+
+# Vector Database
+langchain-chroma>=0.1.0
+chromadb>=0.4.22
+
+# Embeddings
 sentence-transformers>=2.2.0
-chromadb>=0.4.0
+transformers>=4.30.0
+
+# Web Search
+langchain-tavily>=0.0.1
+tavily-python>=0.3.0
+
+# Hybrid Search (NEW in app4.py)
+rank-bm25>=0.2.2
+
+# NLP for BM25
+nltk>=3.8.1
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Utilities
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Document Processing
 pypdf>=3.17.0
+pypdf2>=3.0.1
+
+# Optional but recommended
+python-magic>=0.4.27  # File type detection
