@@ -13,8 +13,8 @@ from langchain_core.documents import Document
 load_dotenv()
 
 # Define paths and constants
-DATA_PATH = "../knowledge_base/docs" 
-VECTOR_DB_PATH = "../knowledge_base/vector_db"
+DATA_PATH = "knowledge_base/docs" 
+VECTOR_DB_PATH = "knowledge_base/vector_db"
 # Using HuggingFace embedding model (FREE!)
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2" 
 

@@ -10,7 +10,7 @@ except Exception as e:
     sys.exit(1)
 
 try:
-    client = chromadb.PersistentClient(path='../knowledge_base/vector_db')
+    client = chromadb.PersistentClient(path='knowledge_base/vector_db')
     collection = client.get_collection("langchain")
     print("✓ Found 'langchain' collection")
 except Exception as e:

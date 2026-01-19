@@ -43,3 +43,6 @@ pypdf2>=3.0.1
 
 # Optional but recommended
 python-magic>=0.4.27  # File type detection
+
+# AWS SDK for S3 access
+boto3>=1.26.0

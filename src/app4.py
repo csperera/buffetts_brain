@@ -5,6 +5,7 @@
 import os
 import re
 import streamlit as st
+from pathlib import Path
 from dotenv import load_dotenv
 from typing import List, Tuple
 from collections import defaultdict
@@ -33,12 +34,44 @@ try:
 except LookupError:
     nltk.download('stopwords', quiet=True)
 
+def download_vector_db_from_s3():
+    """Download vector database from S3 if running on AWS."""
+    if os.getenv('AWS_REGION') or os.getenv('AWS_EXECUTION_ENV'):
+        st.sidebar.info("☁️ Running on AWS - downloading vector DB from S3...")
+        try:
+            import boto3
+            local_path = "/tmp/vector_db"
+            s3 = boto3.client('s3')
+            bucket_name = "buffetts-brain-knowledge-base"
+            Path(local_path).mkdir(parents=True, exist_ok=True)
+            
+            paginator = s3.get_paginator('list_objects_v2')
+            file_count = 0
+            for page in paginator.paginate(Bucket=bucket_name, Prefix='vector_db/'):
+                if 'Contents' in page:
+                    for obj in page['Contents']:
+                        key = obj['Key']
+                        if key.endswith('/'):
+                            continue
+                        local_file = os.path.join('/tmp', key)
+                        Path(os.path.dirname(local_file)).mkdir(parents=True, exist_ok=True)
+                        s3.download_file(bucket_name, key, local_file)
+                        file_count += 1
+            st.sidebar.success(f"✅ Downloaded {file_count} files from S3")
+            return local_path
+        except Exception as e:
+            st.sidebar.error(f"❌ S3 download error: {e}")
+            st.stop()
+    else:
+        st.sidebar.info("💻 Running locally - using local vector DB")
+        return "knowledge_base/vector_db"
+
 # --- Configuration ---
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
-VECTOR_DB_PATH = "../knowledge_base/vector_db"
+VECTOR_DB_PATH = "knowledge_base/vector_db"
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 GROQ_MODEL_NAME = "llama-3.1-8b-instant"
 
@@ -738,7 +771,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.markdown(
-    "<p style='text-align: center;'>Powered by Groq (Llama 3.1 8B), Tavily Search & HuggingFace Embeddings<br/>✨ Smart Boosting: First Mention (Temporal) × Detail Level (Content) ✨<br/>🔍 DEBUG MODE ACTIVE 🔍</p>", 
+    "<p style='text-align: center;'>Powered by Groq (Llama 3.1 8B), Tavily Search & HuggingFace Embeddings</p>", 
     unsafe_allow_html=True
 )
 
@@ -810,7 +843,7 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
         if msg["role"] == "assistant" and "debug" in msg:
-            with st.expander("🔍 Debug Information", expanded=False):
+            with st.expander("📊 Query Information", expanded=False):
                 for debug_line in msg["debug"]:
                     st.text(debug_line)
 
@@ -829,7 +862,7 @@ if prompt := st.chat_input("Ask me a question..."):
             
             st.write(response)
             
-            with st.expander("🔍 Debug Information", expanded=True):
+            with st.expander("📊 Query Information", expanded=False):
                 for debug_line in debug_info:
                     st.text(debug_line)
             
