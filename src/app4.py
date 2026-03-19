@@ -71,7 +71,7 @@ load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
-VECTOR_DB_PATH = "knowledge_base/vector_db"
+VECTOR_DB_PATH = download_vector_db_from_s3()
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 GROQ_MODEL_NAME = "llama-3.1-8b-instant"
 
