@@ -645,7 +645,7 @@ Project Link: [https://github.com/csperera/buffetts-brain](https://github.com/yo
 
 ## 🎬 Demo Video
 
-[COMING SOON!]
+[![Click To Watch Demo Video](https://img.shields.io/badge/▶️-Click%20To%20Watch%20Demo%20Video-red?style=for-the-badge&logo=youtube)](https://youtu.be/XHCs2oZPfng)
 
 *Video demonstrates:*
 - RAG query with Buffett's investment philosophy
