@@ -14,45 +14,24 @@ from langchain_groq import ChatGroq
 from langchain_chroma import Chroma
 from langchain_tavily import TavilySearch
 
-def download_vector_db_from_s3():
-    """Download vector database from S3 if running on AWS."""
-    if os.getenv('AWS_REGION') or os.getenv('AWS_EXECUTION_ENV'):
-        st.sidebar.info("☁️ Running on AWS - downloading vector DB from S3...")
-        try:
-            import boto3
-            local_path = "/tmp/vector_db"
-            s3 = boto3.client('s3')
-            bucket_name = "buffetts-brain-knowledge-base"
-            Path(local_path).mkdir(parents=True, exist_ok=True)
-            
-            paginator = s3.get_paginator('list_objects_v2')
-            file_count = 0
-            for page in paginator.paginate(Bucket=bucket_name, Prefix='vector_db/'):
-                if 'Contents' in page:
-                    for obj in page['Contents']:
-                        key = obj['Key']
-                        if key.endswith('/'):
-                            continue
-                        local_file = os.path.join('/tmp', key)
-                        Path(os.path.dirname(local_file)).mkdir(parents=True, exist_ok=True)
-                        s3.download_file(bucket_name, key, local_file)
-                        file_count += 1
-            st.sidebar.success(f"✅ Downloaded {file_count} files from S3")
-            return local_path
-        except Exception as e:
-            st.sidebar.error(f"❌ S3 download error: {e}")
-            st.stop()
-    else:
-        st.sidebar.info("💻 Running locally - using local vector DB")
-        return "knowledge_base/vector_db"
-
 # --- Configuration ---
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
-VECTOR_DB_PATH = download_vector_db_from_s3()
+VECTOR_DB_PATH = "knowledge_base/vector_db"
 GROQ_MODEL_NAME = "llama-3.1-8b-instant"
+
+if not GROQ_API_KEY:
+    st.error("Error: GROQ_API_KEY not found.")
+    st.stop()
+if not TAVILY_API_KEY:
+    st.error("Error: TAVILY_API_KEY not found.")
+    st.stop()
+
+if not os.path.exists(VECTOR_DB_PATH):
+    st.error(f"❌ Vector DB not found at '{VECTOR_DB_PATH}'. Make sure chroma_db/ is committed to the repo.")
+    st.stop()
 
 if not GROQ_API_KEY:
     st.error("Error: GROQ_API_KEY not found. Please add it to your .env file.")
@@ -266,11 +245,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.markdown(
-    "<h2 style='text-align: center; font-size: 2em; color: #AAAAAA;'>AI-Powered Investment Wisdom</h2>", 
+    "<h2 style='text-align: center; font-size: 2em; color: #AAAAAA;'>AI-Powered RAG Knowledge Base</h2>", 
     unsafe_allow_html=True
 )
 st.markdown(
-    "<p style='text-align: center;'>Powered by Groq (Llama 3.1 8B) & Tavily Search</p>", 
+    "<p style='text-align: center;'>Powered by Groq (Llama 3.1 8B) & Tavily Search & Hugging Face Embeddings</p>", 
     unsafe_allow_html=True
 )
 
@@ -278,7 +257,7 @@ st.markdown(
 with st.sidebar:
     st.header("⚡ About")
     st.markdown("""
-    **Buffett's Brain** (Free Tier Edition) combines:
+    **Buffett's Brain** (Online Edition) combines:
     - 📚 **RAG Knowledge Base**: 
       - Partnership Letters (1957-1969)
       - Berkshire Hathaway Letters (1977-2024)
@@ -287,7 +266,7 @@ with st.sidebar:
     - 🔍 **Vector Search**: Semantic similarity
     - 🌐 **Real-Time Web Search**: Current data via Tavily
     
-    **Optimized for AWS Free Tier:**
+    **Optimized for Render.com:**
     - ✅ Lightweight dependencies
     - ✅ Pre-computed embeddings
     - ✅ Fast startup time
@@ -297,7 +276,7 @@ with st.sidebar:
     - LLM: Groq (Llama 3.1 8B)
     - Vector DB: Chroma (pre-computed)
     - Search: Tavily Advanced
-    - Storage: AWS S3
+    - Storage: Bundled with app
     """)
     
     if st.button("🗑️ Clear Chat History"):
