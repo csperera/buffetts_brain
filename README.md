@@ -37,7 +37,7 @@
 - **Real-time information**: Web search integration for current market data
 - **Intelligent routing**: LLM-based relevance scoring to choose the optimal information source
 
-This project demonstrates cutting-edge RAG architecture with hybrid retrieval strategies, making it an excellent demonstration of ML/AI engineering.
+This project demonstrates cutting-edge RAG architecture with hybrid retrieval strategies, making it an excellent demonstration of AI/ML engineering.
 
 ---
 
