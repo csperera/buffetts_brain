@@ -91,13 +91,13 @@ This project demonstrates cutting-edge RAG architecture with hybrid retrieval st
           │         └────┬──────────────┘
           │              │
           │         Score < 5? ──YES──┐
-          │              │             │
-          │             NO             │
-          │              │             │
-    ┌─────▼──────────────▼─────────────▼──┐
-    │   Combine Context + Generate Answer  │
-    │         (Groq Llama 3.1 8B)          │
-    └──────────────┬───────────────────────┘
+          │              │            │
+          │             NO            │
+          │              │            │
+    ┌─────▼──────────────▼────────────▼──┐
+    │   Combine Context + Generate Answer│
+    │         (Groq Llama 3.1 8B)        │
+    └──────────────┬─────────────────────┘
                    │
             ┌──────▼───────┐
             │   Response   │
