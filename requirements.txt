@@ -19,9 +19,6 @@ tavily-python>=0.3.0
 # Environment Variables
 python-dotenv>=1.0.0
 
-# AWS SDK
-boto3>=1.26.0
-
 # REMOVED (too heavy for free tier):
 # sentence-transformers
 # transformers

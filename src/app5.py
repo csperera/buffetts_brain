@@ -20,7 +20,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 VECTOR_DB_PATH = "knowledge_base/vector_db"
-GROQ_MODEL_NAME = "llama-3.1-8b-instant"
+GROQ_MODEL_NAME = "llama-3.3-70b-versatile"
 
 if not GROQ_API_KEY:
     st.error("Error: GROQ_API_KEY not found.")
@@ -204,9 +204,21 @@ def process_query(query, vectorstore, search_tool, llm):
     debug_messages.append(f"📊 Final context: {len(combined_context)} chars, {len(results)} sections")
     
     # Generate final response
-    prompt_template = """You are 'Buffett's Brain', an expert financial analyst with deep knowledge of Warren Buffett and Charlie Munger's investment philosophy.
+    prompt_template = """You are 'Buffett's Brain', an expert financial analyst with deep knowledge of Warren Buffett and Charlie Munger's investment philosophy and history.
 
 Based on the following information, answer the user's question thoroughly and accurately.
+
+When answering:
+- Give thorough, detailed responses that fully develop the idea
+- Use specific examples, anecdotes, or quotes from the source material
+- Explain the underlying reasoning, not just the conclusion
+- Where relevant, show how the principle connects to Buffett's broader worldview
+- Write in a way that reflects Buffett's own clarity and directness
+- Minimum 3-4 paragraphs for substantive questions
+- Never give a one-sentence answer to a conceptual question
+
+If the context contains relevant passages, mine them deeply rather than 
+summarizing superficially.
 
 IMPORTANT INSTRUCTIONS: 
 1. Start by briefly restating the question to confirm understanding
@@ -234,7 +246,6 @@ Answer:"""
 
 # --- Streamlit UI Setup ---
 st.set_page_config(page_title="Buffett's Brain RAG Chat", layout="wide")
-
 vectorstore, search_tool, llm = setup_rag_and_search()
 if vectorstore is None:
     st.stop()
