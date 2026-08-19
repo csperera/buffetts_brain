@@ -20,7 +20,8 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 VECTOR_DB_PATH = "knowledge_base/vector_db"
-GROQ_MODEL_NAME = "llama-3.3-70b-versatile"
+GROQ_MODEL_NAME = "openai/gpt-oss-120b"
+print(f"DEBUG: Using model = {GROQ_MODEL_NAME}")
 
 if not GROQ_API_KEY:
     st.error("Error: GROQ_API_KEY not found.")
@@ -260,7 +261,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.markdown(
-    "<p style='text-align: center;'>Powered by Groq (Llama 3.1 8B) & Tavily Search & Hugging Face Embeddings</p>", 
+    "<p style='text-align: center;'>Powered by Groq (GPT-OSS 120B) & Tavily Search & Hugging Face Embeddings</p>", 
     unsafe_allow_html=True
 )
 
@@ -284,7 +285,7 @@ with st.sidebar:
     - ✅ Low memory footprint
     
     **Tech Stack:**
-    - LLM: Groq (Llama 3.1 8B)
+    - LLM: Groq (GPT-OSS 120B)
     - Vector DB: Chroma (pre-computed)
     - Search: Tavily Advanced
     - Storage: Bundled with app
